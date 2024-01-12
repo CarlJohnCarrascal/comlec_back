@@ -91,7 +91,7 @@ class VotersController extends Controller
         $purok = $request->purok;
         $house_number = $request->house_number;
         $lables = [];
-        $dataset = ["leader" => [],"right" => [],"left" => [],"undecided" => [],"none" => []];
+        $dataset = ["leader" => [],"right" => [],"left" => [],"undecided" => [],"none" => [],"tright" => [],"tleft" => [],"tundecided" => [],"tnone" => []];
         if($city == 'all'){
             $lables = Voters::select('city as label')->distinct()->get();
             for ($l=0; $l < count($lables); $l++) { 
@@ -252,11 +252,16 @@ class VotersController extends Controller
 
         $total = [
             "voters"=> Voters::all()->count(),
-            "leader"=> array_sum($dataset['leader']),
-            "right"=>array_sum($dataset['right']) + array_sum($dataset['leader']),
-            "left"=>array_sum($dataset['left']),
-            "undecided"=>array_sum($dataset['undecided']),
-            "unmarked"=>array_sum($dataset['none'])
+            "leader"=> Voters::all()->where('mark', '=', 'Leader')->count(),
+            "right"=> Voters::all()->where('mark', '=', 'Right')->count(),
+            "left"=> Voters::all()->where('mark', '=', 'Left')->count(),
+            "undecided"=> Voters::all()->where('mark', '=', 'Undecided')->count(),
+            "unmarked"=> Voters::all()->where('mark', '=', '')->count(),
+            "cleader"=> array_sum($dataset['leader']),
+            "cright"=>array_sum($dataset['right']) + array_sum($dataset['leader']),
+            "cleft"=>array_sum($dataset['left']),
+            "cundecided"=>array_sum($dataset['undecided']),
+            "cunmarked"=>array_sum($dataset['none'])
         ];
 
         return response()->json(["labels" => $lables,"datasets" => $dataset, "total" => $total]);
