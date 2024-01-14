@@ -12,6 +12,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+
+        $this->call(VotersSeeder::class);
+
+
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([
@@ -41,32 +45,32 @@ class DatabaseSeeder extends Seeder
         // $v5 = \App\Models\Voters::factory(4)->create(["house_id" => $h9]);
         // $v5 = \App\Models\Voters::factory(6)->create(["house_id" => $h10]);
 
-        $city = ["Sorsogon"];
-        $municipality = ["Sorsogon City", "Irosin", "Magallanes", "Gubat", "Juban", "Casiguran", "Bulan"];
+        // $city = ["Sorsogon"];
+        // $municipality = ["Sorsogon City", "Irosin", "Magallanes", "Gubat", "Juban", "Casiguran", "Bulan"];
 
-        for ($a=0; $a < count($municipality); $a++) { 
-            $m = $municipality[$a];
-            $bn = rand(5, 15);
-            for ($b=1; $b < $bn; $b++) { 
-                $pn = rand(5, 10);
-                for ($c=1; $c < $pn; $c++) {
-                    $hn = rand(5, 20); 
-                    for ($d=1; $d < $hn; $d++) { 
-                        $house = \App\Models\House::create(["house_number" => $d])->id;
-                        $vn = rand(1, 7);
-                        $marks = ["Right", "Left", "Undecided"];
-                        \App\Models\Voters::factory($vn)->create([
-                            'house_id' => $house,
-                            'house_number' => $d,
-                            'purok' => $c,
-                            'barangay' => 'Brgy ' . $b,
-                            'municipality' => $m,
-                            'mark' => $marks[array_rand($marks, 1)]
-                        ]);
-                    }
-                }
-            }
-        }
+        // for ($a=0; $a < count($municipality); $a++) { 
+        //     $m = $municipality[$a];
+        //     $bn = rand(5, 15);
+        //     for ($b=1; $b < $bn; $b++) { 
+        //         $pn = rand(5, 10);
+        //         for ($c=1; $c < $pn; $c++) {
+        //             $hn = rand(5, 20); 
+        //             for ($d=1; $d < $hn; $d++) { 
+        //                 $house = \App\Models\House::create(["house_number" => $d])->id;
+        //                 $vn = rand(1, 7);
+        //                 $marks = ["Right", "Left", "Undecided"];
+        //                 \App\Models\Voters::factory($vn)->create([
+        //                     'house_id' => $house,
+        //                     'house_number' => $d,
+        //                     'purok' => $c,
+        //                     'barangay' => 'Brgy ' . $b,
+        //                     'municipality' => $m,
+        //                     'mark' => $marks[array_rand($marks, 1)]
+        //                 ]);
+        //             }
+        //         }
+        //     }
+        // }
 
         
 
@@ -75,11 +79,11 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-        \App\Models\City::create(["name" => "Sorsogon"]);
-        \App\Models\Municipality::create(["name" => "Irosin"]);
-        \App\Models\Barangay::create(["name" => "Brgy 1", "purok" => 10]);
-        \App\Models\Barangay::create(["name" => "Brgy 2", "purok" => 5]);
-        \App\Models\Barangay::create(["name" => "Brgy 3", "purok" => 9]);
-        \App\Models\Barangay::create(["name" => "Brgy 4", "purok" => 12]);
+        // \App\Models\City::create(["name" => "Sorsogon"]);
+        // \App\Models\Municipality::create(["name" => "Irosin"]);
+        // \App\Models\Barangay::create(["name" => "Brgy 1", "purok" => 10]);
+        // \App\Models\Barangay::create(["name" => "Brgy 2", "purok" => 5]);
+        // \App\Models\Barangay::create(["name" => "Brgy 3", "purok" => 9]);
+        // \App\Models\Barangay::create(["name" => "Brgy 4", "purok" => 12]);
     }
 }
