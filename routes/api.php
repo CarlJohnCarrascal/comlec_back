@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\api\LocationController;
 use App\Http\Controllers\Api\VotersController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,3 +27,10 @@ Route::post("voters/checkimport", [VotersController::class, 'checkimport']);
 Route::put("voters/mark/{voter}", [VotersController::class, 'mark']);
 Route::post("voters/mark-selected", [VotersController::class, 'markselected']);
 Route::post("voters/bar-chart", [VotersController::class, 'getbarchart']);
+Route::get("bar-chart-total", [VotersController::class, 'getbarcharttotal']);
+
+
+Route::get('cities', [LocationController::class, 'get_cities']);
+Route::get('municipalities', [LocationController::class, 'get_municipalities']);
+Route::get('barangay', [LocationController::class, 'get_barangays']);
+Route::get('houses', [LocationController::class, 'get_houses']);

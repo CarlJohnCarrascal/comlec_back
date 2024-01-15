@@ -7,14 +7,51 @@ use App\Models\Voters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use function PHPUnit\Framework\isNull;
+
 class VotersController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Voters::paginate(500), 200);
+        
+        try {
+            $s = $request->search;
+            $voters = Voters::where(function ($v) use ($s) {
+                $v->where('fname', 'LIKE', '%'. $s .'%')
+                    ->orWhere('lname', 'LIKE', '%'. $s .'%')
+                    ->orWhere('mname', 'LIKE', '%'. $s .'%');
+            });
+
+            if($request->city !== 'all') $voters->where('city','=', $request->city['name']);
+            if($request->municipality !== 'all') $voters->where('municipality','=', $request->municipality['name']);
+            if($request->barangay !== 'all') $voters->where('barangay','=', $request->barangay['name']);
+            if($request->purok !== 'all') $voters->where('purok','=', $request->purok);
+            if($request->house_number !== 'all') $voters->where('house_number','=', $request->house_number['house_number']);
+
+            
+                $show = [];
+            if($request->show['all'] == "false"){
+                if($request->show['leader'] == "true") array_push($show, "Leader");
+                if($request->show['right'] == "true") array_push($show, "Right");
+                if($request->show['left'] == "true") array_push($show, "Left");
+                if($request->show['undecided'] == "true") array_push($show, "Undecided");
+                if($request->show['unmarked'] == "true") array_push($show, "");
+                $voters->whereIn('mark', $show);
+            }
+            //return json_encode([$show, $request->show['all'] == "false"]);
+
+            if($request->show['house_head'] == "true"){  
+                $voters->where('ishead', true);
+            }
+
+            return response()->json($voters->paginate($request->item_per_page), 200);
+        } catch (\Throwable $th) {
+            return $th;
+        }
+        
     }
 
     public function total_voters(){
@@ -85,11 +122,17 @@ class VotersController extends Controller
     }
 
     public function getbarchart(Request $request) {
+        try {
         $city = $request->city;
         $municipality = $request->municipality;
         $barangay = $request->barangay;
         $purok = $request->purok;
-        $house_number = $request->house_number;
+
+        if($city !== "all") $city = $city['name'];
+        if($municipality !== "all") $municipality = $municipality['name'];
+        if($barangay !== "all") $barangay = $barangay['name'];
+        //$house_number = $request->house_number;
+
         $lables = [];
         $dataset = ["leader" => [],"right" => [],"left" => [],"undecided" => [],"none" => [],"tright" => [],"tleft" => [],"tundecided" => [],"tnone" => []];
         if($city == 'all'){
@@ -99,6 +142,8 @@ class VotersController extends Controller
                 ->selectRaw('mark, count(*) as total')
                 ->where('city','=',$lables[$l]->label)
                 ->groupBy('mark')->get();
+
+
                 $ld = 0;
                 $rd = 0;
                 $led = 0;
@@ -116,6 +161,7 @@ class VotersController extends Controller
                 array_push($dataset['left'], $led);
                 array_push($dataset['undecided'], $ud);
                 array_push($dataset['none'], $nd);
+                //return json_encode($dataset);
             }
         }
         if($city !== 'all' && $municipality == 'all'){
@@ -251,19 +297,31 @@ class VotersController extends Controller
         }
 
         $total = [
-            "voters"=> Voters::all()->count(),
-            "leader"=> Voters::all()->where('mark', '=', 'Leader')->count(),
-            "right"=> Voters::all()->where('mark', '=', 'Right')->count(),
-            "left"=> Voters::all()->where('mark', '=', 'Left')->count(),
-            "undecided"=> Voters::all()->where('mark', '=', 'Undecided')->count(),
-            "unmarked"=> Voters::all()->where('mark', '=', '')->count(),
-            "cleader"=> array_sum($dataset['leader']),
-            "cright"=>array_sum($dataset['right']) + array_sum($dataset['leader']),
-            "cleft"=>array_sum($dataset['left']),
-            "cundecided"=>array_sum($dataset['undecided']),
-            "cunmarked"=>array_sum($dataset['none'])
+            "leader" => array_sum($dataset['leader']),
+            "right" => array_sum($dataset['right']) + array_sum($dataset['leader']),
+            "left" => array_sum($dataset['left']),
+            "undecided" => array_sum($dataset['undecided']),
+            "unmarked" => array_sum($dataset['none'])
         ];
 
         return response()->json(["labels" => $lables,"datasets" => $dataset, "total" => $total]);
+        
+            //code...
+        } catch (\Throwable $th) {
+            return $th;
+        }
+    }
+
+    public function getbarcharttotal() {
+        //return DB::table('voters')->count();
+        $total = [
+            "voters"=> DB::table('voters')->count(),
+            "leader"=> DB::table('voters')->where('mark', '=', 'Leader')->count(),
+            "right"=> DB::table('voters')->where('mark', '=', 'Right')->count(),
+            "left"=> DB::table('voters')->where('mark', '=', 'Left')->count(),
+            "undecided"=> DB::table('voters')->where('mark', '=', 'Undecided')->count(),
+            "unmarked"=> DB::table('voters')->where('mark', '=', '')->count()
+        ];
+        return response()->json(["total" => $total]);
     }
 }

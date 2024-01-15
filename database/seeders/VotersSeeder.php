@@ -28,23 +28,29 @@ class VotersSeeder extends Seeder
         $purok2 = "";
         foreach ($ads as $ad) {
             
-            if(City::all()->where('name', '=', $ad['city'])){
+            if(City::where('name', '=', $ad['city'])->count() == 0){
                 $city = City::create(["name" => $ad['city'], "region" => "V"]);
             }
-            if(Municipality::all()->where('name', '=', $ad['municipality'])){
+            if(Municipality::where('name', '=', $ad['municipality'])->count() == 0){
                 $mun = Municipality::create(["c_id" => $city->id, "name" => $ad['municipality']]);
             }
-            if(Barangay::all()->where('name', '=', $ad['brgy'])){
+            if(Barangay::where('name', '=', $ad['brgy'])->count() == 0){
                 $purok = rand(5, 10);
-                $purok2 = Barangay::create(["m_id" => $city->id, "name" => $ad['brgy'], "purok" => $purok]);
+                $brgy = Barangay::create(["m_id" => $mun->id, "name" => $ad['brgy'], "purok" => $purok]);
             }
             
             for ($c = 1; $c < $purok; $c++) {
-                $hn = rand(5, 20);
+                $hn = rand(5, 30);
                 for ($d = 1; $d < $hn; $d++) {
-                    $house = House::create(["house_number" => $d])->id;
+                    $house = House::create([
+                        "house_number" => $d,
+                        "c_id" => $city->id,
+                        "m_id" => $mun->id,
+                        "b_id" => $brgy->id,
+                        "p_id" => $c,
+                    ])->id;
                     $vn = rand(1, 7);
-                    $marks = ["Right", "Left", "Undecided", ""];
+                    $marks = ["Right", "Right", "Right", "Right", "Left", "Left", "Undecided", ""];
                     Voters::factory($vn)->create([
                         'house_id' => $house,
                         'house_number' => $d,

@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('houses', function (Blueprint $table) {
             $table->id();
             $table->string('house_number');
+            $table->string('p_id');
+            $table->string('b_id');
+            $table->string('m_id');
+            $table->string('c_id');
             $table->timestamps();
         });
     }
