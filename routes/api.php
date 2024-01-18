@@ -34,3 +34,7 @@ Route::get('cities', [LocationController::class, 'get_cities']);
 Route::get('municipalities', [LocationController::class, 'get_municipalities']);
 Route::get('barangay', [LocationController::class, 'get_barangays']);
 Route::get('houses', [LocationController::class, 'get_houses']);
+
+Route::get('house-member', [VotersController::class, 'get_house_member']);
+Route::get('mark-as-head/{voter}', [VotersController::class, 'mark_as_head']);
+

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Barangay;
@@ -31,10 +31,12 @@ class LocationController extends Controller
         $mid = $req->municipality;
         $bid = $req->barangay;
         $pid = $req->purok;
-        $houses = House::all()->where('c_id','=', $cid)
+        $show = $req->show;
+        $houses = House::where('c_id','=', $cid)
         ->where('m_id','=', $mid)
         ->where('b_id','=', $bid)
-        ->where('p_id','=', $pid);
+        ->where('p_id','=', $pid)->paginate($show);
         return response()->json($houses);
     }
+
 }

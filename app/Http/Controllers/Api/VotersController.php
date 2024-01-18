@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\House;
 use App\Models\Voters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -102,12 +103,14 @@ class VotersController extends Controller
         $markAs = $request->markas;
         $voters = json_decode($request->voters);
 
+        if($markAs == "Unmark") $markAs = "";
         //return response()->json(["success" => true, json_encode($markAs), json_encode($voters)],200);
-
-        foreach($voters as $v){
-            $voter = Voters::where('id','=', $v->id);
-            $voter->update(['mark' => $markAs]);
-        }
+        Voters::whereIn('id', $voters)->update(['mark' => $markAs]);
+        // foreach($voters as $v){
+        //     $voter = 
+        //     $voter->update(['mark' => $markAs]);
+        // }
+        
 
         return response()->json(["success" => true, json_encode($markAs), json_encode($voters)],200);
     }
@@ -323,5 +326,18 @@ class VotersController extends Controller
             "unmarked"=> DB::table('voters')->where('mark', '=', '')->count()
         ];
         return response()->json(["total" => $total]);
+    }
+
+    public function get_house_member(Request $request){
+        $house_id = $request->id;
+        $member = Voters::where('house_id','=', $house_id)->get();
+        return response()->json($member);
+    }
+
+    public function mark_as_head(Voters $voter) {
+        Voters::where('house_id','=',$voter->house_id)->update(['ishead' => false]);
+        $voter->update(['ishead' => true]);
+        $member = Voters::where('house_id','=', $voter->house_id)->get();
+        return response()->json($member);
     }
 }
