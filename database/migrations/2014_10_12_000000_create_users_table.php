@@ -13,7 +13,15 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->nullable();
+            $table->string('type')->nullable();
+            $table->string('corvered_area_country')->nullable();
+            $table->string('corvered_area_city')->nullable();
+            $table->string('corvered_area_district')->nullable();
+            $table->string('corvered_area_municipality')->nullable();
+            $table->string('corvered_area_barangay')->nullable();
+            $table->string('alias')->nullable();
+            $table->string('color')->default('#Ffc0cb');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

@@ -10,10 +10,13 @@ class Voters extends Model
     use HasFactory;
 
     protected $fillable = [
+        'precint_number',
         'house_id',
+        'house_number',
         'purok',
         'barangay',
         'municipality',
+        'district',
         'city',
         'fname',
         'mname',
@@ -21,7 +24,6 @@ class Voters extends Model
         'suffix',
         'gender',
         'birthdate',
-        'mark',
         'status',
         'ishead'
     ];

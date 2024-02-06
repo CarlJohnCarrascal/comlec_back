@@ -11,25 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('voters', function (Blueprint $table) {
+        Schema::create('master_voters', function (Blueprint $table) {
             $table->id();
-            $table->string('precint_number')->nullable();
             $table->integer('house_id');
             $table->integer('house_number');
-            $table->integer('purok');
+            $table->integer('precinct_number')->nullable();
+            $table->integer('purok')->nullable();
+            $table->string('street')->nullable();
             $table->string('barangay');
             $table->string('municipality');
-            $table->string('district')->nullable();
             $table->string('city');
             $table->string('fname');
-            $table->string('mname');
+            $table->string('mname')->nullable();
             $table->string('lname');
-            $table->string('suffix');
-            $table->string('gender');
-            $table->date('birthdate');
-            // $table->string('mark');
-            $table->string('status');
-            $table->string('ishead');
+            $table->string('suffix')->nullable();
+            $table->string('gender')->nullable();
+            $table->date('birthdate')->nullable();
+            $table->string('mark')->nullable();
+            $table->string('status')->nullable();
+            $table->string('ishead')->default(false);
             $table->timestamps();
         });
     }
@@ -39,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('voters');
+        Schema::dropIfExists('master_voters');
     }
 };

@@ -28,11 +28,10 @@ class VotersFactory extends Factory
             'municipality' => 'Irosin',
             'city' => 'Sorsogon',
             'fname' => fake()->firstName($g),
-            'lname' => fake()->lastName(),
-            'mname' => fake()->lastName(),
+            'lname' => '',
+            'mname' => '',
             'suffix' => '',
             'birthdate' => fake()->date('Y-m-d', '2005-01-01'),
-            'mark' => '',
             'gender' => $g,
             'status' => '',
             'ishead' => false

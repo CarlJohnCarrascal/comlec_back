@@ -4,8 +4,13 @@ namespace Database\Seeders;
 
 use App\Models\Barangay;
 use App\Models\City;
+use App\Models\Config;
 use App\Models\House;
+use App\Models\Mark;
 use App\Models\Municipality;
+use App\Models\Opponent;
+use App\Models\Survey;
+use App\Models\User;
 use App\Models\Voters;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -26,6 +31,42 @@ class VotersSeeder extends Seeder
         $brgy = "";
         $purok = "";
         $purok2 = "";
+
+        $user = User::create([
+            'name' => 'John Doe',
+            'alias' => 'Me',
+            'type' => 'city',
+            'email' => 'johndoe@mail.com',
+            'password' => bcrypt('12345'),
+            'color' => '#05b828',
+            'corvered_area_country' => 'Philippines',
+            'corvered_area_city' => 1
+        ]);
+
+        Config::create([
+            'user_id' => $user->id,
+        ]);
+
+        $survey = Survey::create([
+            'user_id' => $user->id,
+            'name' => 'my first survey',
+            'isuse' => true
+        ]);
+
+        Opponent::create([
+            'user_id' => $user->id,
+            'name' => 'Christopher Jennas',
+            'alias' => 'CJ',
+            'color' => '#fffb00',
+        ]);
+        Opponent::create([
+            'user_id' => $user->id,
+            'name' => 'Oves Faneru',
+            'alias' => 'OF',
+            'color' => '#9a10de',
+        ]);
+
+
         foreach ($ads as $ad) {
             
             if(City::where('name', '=', $ad['city'])->count() == 0){
@@ -49,17 +90,41 @@ class VotersSeeder extends Seeder
                         "b_id" => $brgy->id,
                         "p_id" => $c,
                     ])->id;
+                    
                     $vn = rand(1, 7);
-                    $marks = ["Right", "Right", "Right", "Right", "Left", "Left", "Undecided", ""];
-                    Voters::factory($vn)->create([
-                        'house_id' => $house,
-                        'house_number' => $d,
-                        'purok' => $c,
-                        'barangay' => $ad['brgy'],
-                        'municipality' => $ad['municipality'],
-                        'city' => $ad['city'],
-                        'mark' => $marks[array_rand($marks, 1)]
-                    ]);
+                    $marks = ["Me", "Me", "Me", "Me", "OF", "CJ", "OF", "CJ", "Undecided", ""];
+                    $m = $marks[array_rand($marks, 1)];
+                    $lname = fake()->lastName();
+                    $mname = fake()->lastName();
+
+                    for ($gg = 1; $gg < $vn; $gg++) {
+                        $gender = ["male", "female"];
+                        $g = $gender[array_rand($gender, 1)];
+                        $h = false;
+                        if($gg == 1) $h = true;
+
+                        $voters = Voters::create([
+                            'house_id' => $house,
+                            'house_number' => $d,
+                            'purok' => $c,
+                            'barangay' => $ad['brgy'],
+                            'municipality' => $ad['municipality'],
+                            'city' => $ad['city'],
+                            'lname' => $lname,
+                            'mname' => $mname,
+                            'fname' => fake()->firstName($g),
+                            'suffix' => '',
+                            'birthdate' => fake()->date('Y-m-d', '2005-01-01'),
+                            'gender' => $g,
+                            'status' => '',
+                            'ishead' => $h
+                        ]);
+                        Mark::create([
+                            'survey_id' => $survey->id,
+                            'voters_id' => $voters->id,
+                            'mark' => $m
+                        ]);
+                    }
                 }
             }
         }
