@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Survey;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class SurveyController extends Controller
@@ -26,7 +27,10 @@ class SurveyController extends Controller
             return response()->json($response, 400);
         }
 
+        $user = Auth::user();
+
         $survey = Survey::create([
+            'user_id' => $user->id,
             "name" => $request['name'],
             "status" => ""
         ]);

@@ -187,7 +187,7 @@ class VotersController extends Controller
             $lables = Voters::select('city as label')->distinct()->get();
             $lables = Voters::select('city as label')->where('city', '=', $city)->distinct()->get();
             $data = DB::table('voters')->rightJoin('marks','marks.voters_id','voters.id')
-                ->selectRaw('voters.municipality as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" THEN "Unmarked" ELSE marks.`mark` END AS mark')
+                ->selectRaw('voters.city as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" THEN "Unmarked" ELSE marks.`mark` END AS mark')
                 ->groupBy(['voters.city','marks.mark'])->get()->toArray();
                 //return response($data->pluck('Unmarked','mark'));
             foreach($lables as $label) {                                                  

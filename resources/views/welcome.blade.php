@@ -9,8 +9,8 @@
     <title>Vite App</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     
-    <script type="module" crossorigin src="/assets/index-nu-1dktl.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DAmfnPRS.css">
+    <script type="module" crossorigin src="/assets/index-gnrdaCIm.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-um-Z--lE.css">
     
   </head>
   <body>

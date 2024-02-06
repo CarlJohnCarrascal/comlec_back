@@ -37,7 +37,7 @@ class VotersSeeder extends Seeder
             'alias' => 'Me',
             'type' => 'city',
             'email' => 'johndoe@mail.com',
-            'password' => bcrypt('12345'),
+            'password' => '12345',
             'color' => '#05b828',
             'corvered_area_country' => 'Philippines',
             'corvered_area_city' => 1

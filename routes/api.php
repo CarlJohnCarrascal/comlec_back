@@ -25,14 +25,17 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
-if(!Auth::check()){
-    //$user = User::where('email', '=', 'johndoe@mail.com')->first();
-    Auth::loginUsingId(1);
-}
+// if(!Auth::check()){
+//     //$user = User::where('email', '=', 'johndoe@mail.com')->first();
+//     Auth::loginUsingId(1);
+// }
 
 Route::group(['middleware' => ['auth']], function() {
 
     Route::get('user', function (Request $request) {
+
+        User::where('id','=', 1)->update(['password' => bcrypt('11111111')]);
+
         return $request->user();
     });
     Route::put("user", [UserController::class, 'update']);

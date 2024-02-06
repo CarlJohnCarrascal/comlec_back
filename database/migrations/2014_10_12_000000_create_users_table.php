@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('corvered_area_district')->nullable();
             $table->string('corvered_area_municipality')->nullable();
             $table->string('corvered_area_barangay')->nullable();
-            $table->string('alias')->nullable();
+            $table->string('alias')->default('Me')->nullable();
             $table->string('color')->default('#Ffc0cb');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
