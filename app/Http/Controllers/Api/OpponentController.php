@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Opponent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class OpponentController extends Controller
 {
     public function index() {
-        return response()->json(Opponent::all());
+        $user =  Auth::user();
+        $userid =   $user->id;
+        $opponents = Opponent::where('user_id','=',$userid)->get();
+        return response()->json($opponents);
     }
 
     public function store(Request $request) {
@@ -27,8 +31,12 @@ class OpponentController extends Controller
             ];
             return response()->json($response, 400);
         }
+        
+        $user =  Auth::user();
+        $userid =   $user->id;
 
         $survey = Opponent::create([
+            "user_id" => $userid,
             "name" => $request['name'],
             "color" => $request['color'],
             "alias" =>  $request['alias']

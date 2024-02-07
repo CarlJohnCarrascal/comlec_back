@@ -23,7 +23,7 @@ class LocationController extends Controller
     }
     public function get_barangays(Request $req){
         $m_id = $req->id;
-        $barangays = Barangay::all()->where('m_id', '=', $m_id);
+        $barangays = Barangay::where('m_id', '=', $m_id)->get();
         return response()->json($barangays);
     }
     public function get_houses(Request $req){

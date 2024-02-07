@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('voters', function (Blueprint $table) {
             $table->id();
+            $table->boolean('check')->default(false)->nullable();
             $table->string('precint_number')->nullable();
             $table->integer('house_id');
             $table->integer('house_number');

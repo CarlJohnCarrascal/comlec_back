@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ConfigController;
-use App\Http\Controllers\api\LocationController;
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\OpponentController;
 use App\Http\Controllers\Api\SurveyController;
 use App\Http\Controllers\Api\UserController;
@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Route;
 // });
 // if(!Auth::check()){
 //     //$user = User::where('email', '=', 'johndoe@mail.com')->first();
-//     Auth::loginUsingId(1);
+//     Auth::loginUsingId(5);
 // }
 
 Route::group(['middleware' => ['auth']], function() {

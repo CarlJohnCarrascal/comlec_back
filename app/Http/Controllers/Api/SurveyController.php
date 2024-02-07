@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Validator;
 class SurveyController extends Controller
 {
     public function index() {
-        return response()->json(Survey::all());
+        $user =  Auth::user();
+        $userid =   $user->id;
+        return response()->json(Survey::where('user_id','=',$userid)->get());
     }
 
     public function store(Request $request) {
@@ -54,7 +56,9 @@ class SurveyController extends Controller
     }
 
     public function markuse(Survey $survey) {
-        Survey::where("isuse","=", true)->update(["isuse" => false]);
+        $user =  Auth::user();
+        $userid =   $user->id;
+        Survey::where('user_id','=', $userid)->where("isuse","=", true)->update(["isuse" => false]);
         Survey::where("id","=", $survey->id)->update(["isuse" => true]);
         //$survey->update(["isuse" => 1]);
         return response()->json(Survey::all());

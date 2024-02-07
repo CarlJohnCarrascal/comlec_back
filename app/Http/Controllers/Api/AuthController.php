@@ -90,7 +90,8 @@ class AuthController extends Controller
 
         Survey::create([
             'user_id' => $user->id,
-            'name' => 'My first survey'
+            'name' => 'My first survey',
+            'isuse' => true
         ]);
 
         return redirect('/')->with('success', "Account successfully setup.");
