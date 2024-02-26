@@ -9,8 +9,9 @@
     <title>Vote Logistics App</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     
-    <script type="module" crossorigin src="/assets/index-4iqk8Iuq.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-xIRslg-R.css">
+
+    <script type="module" crossorigin src="/assets/index-peaYG7lC.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-AXC3Lxtg.css">
     
   </head>
   <body>

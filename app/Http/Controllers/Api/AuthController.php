@@ -90,7 +90,7 @@ class AuthController extends Controller
 
         Survey::create([
             'user_id' => $user->id,
-            'name' => 'My first survey',
+            'name' => 'First Survey',
             'isuse' => true
         ]);
 

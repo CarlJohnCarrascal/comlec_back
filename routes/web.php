@@ -51,14 +51,14 @@ Route::post('/email/resend', function (Request $request) {
 
 Route::group(['middleware' => ['auth']], function () {
   Route::get('/logout', [AuthController::class, 'logout']);
-  
+
   Route::post('/update-account', [AuthController::class, 'update']);
 });
 
 
-
-
 Route::group(['middleware' => ['guest']], function () {
+
+  getloc();
 
   Route::post('/register', [AuthController::class, 'register']);
   Route::get('/login', ['as' => 'login', 'uses' => function () {
@@ -77,21 +77,39 @@ Route::get('/{any}', function (Request $request) {
 
 function appview()
 {
-  date_default_timezone_set('Asia/Manila');
-  $clientIP = $_SERVER['REMOTE_ADDR'];
 
-  // $alreadyVisited = WebVisit::where('ip_address', $clientIP)
-  //   ->whereDate('created_at', '=', date('Y-m-d'))->count();
-  // if ($alreadyVisited == 0) {
-  //   WebVisit::create([
-  //     'ip_address' => $clientIP
-  //   ]);
-  // }
+  getloc();
+
+  $isAuth = Auth::check();
+
+  if ($isAuth) {
+    $user = Auth::user();
+    if (
+      $user->name == ''
+      || $user->alias == ''
+      || $user->color == ''
+      || $user->type == ''
+    ) {
+      return view('setup');
+    }
+  }
+
+  return view('welcome');
+}
+
+
+function getloc()
+{
+  date_default_timezone_set('Asia/Manila');
+  $clientIP = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : '127.0.0.1';
+  $details = json_decode(file_get_contents("http://ipinfo.io/{$clientIP}/json"));
+
   $dd = WebVisit::where('ip_address', $clientIP)
     ->whereDate('created_at', '=', date('Y-m-d'))->orderBy('created_at', 'desc')->get();
   if ($dd->count() <= 0) {
     WebVisit::create([
-      'ip_address' => $clientIP
+      'ip_address' => $clientIP,
+      'text' => json_encode($details)
     ]);
   } else {
     $d = $dd[0]->created_at;
@@ -100,34 +118,10 @@ function appview()
     $df = date_diff($d2, $d);
     if ($df->i >= 1) {
       WebVisit::create([
-        'ip_address' => $clientIP
+        'ip_address' => $clientIP,
+        'text' => json_encode($details)
       ]);
     }
     //echo json_encode([$df->m, $df]);
   }
-  //echo json_encode([date_diff($d2,$d), $d, $d2]);
-
-  //$s = FacadesRequest::segment(1);
-
-  $isAuth = Auth::check();
-
-  if($isAuth) {
-    $user = Auth::user();
-    if($user->name == '' 
-      || $user->alias == ''
-      || $user->color == ''
-      || $user->type == ''){
-        return view('setup');
-    }
-  }
-
-  return view('welcome');
-
-  // if($isAuth == true) return view('welcome');
-  // else {
-  //   if($s == 'register') return view('register');
-  //   if($s !== 'login') return redirect('login');
-  //   return view('login');
-  // }
-
 }

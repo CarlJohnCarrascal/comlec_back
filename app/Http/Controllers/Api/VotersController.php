@@ -65,7 +65,9 @@ class VotersController extends Controller
                 if($request->show['leader'] == "true") array_push($show, "Leader");
                 if($request->show['right'] == "true") array_push($show, "Me");
                 if($request->show['undecided'] == "true") array_push($show, "Undecided");
-                if($request->show['unmarked'] == "true") array_push($show, "");
+                if($request->show['unmarked'] == "true") {
+                    array_push($show, "");
+                }
 
                 foreach($request['show']['opponents'] as $op) {
                     $name = $op['alias'];
@@ -73,7 +75,12 @@ class VotersController extends Controller
                 }
 
 
-                $voters->whereIn('marks.mark', $show);
+                if($request->show['unmarked'] == "false") $voters->whereIn('mark', $show);
+                else {
+                    $voters->where(function ($w) use ($show) {
+                        $w->whereIn('mark', $show)->orWhereNull('marks.mark');
+                    });
+                }
             }
             //return json_encode([$show, $request->show['all'] == "false"]);
 
@@ -81,7 +88,7 @@ class VotersController extends Controller
                 $voters->where('voters.ishead', true);
             }
             //$voters->orderBy('voters.fname');
-            //return $voters->limit(10)->toSql();
+            //return $voters->limit(10)->toRawSql();
             $list = $voters->orderBy('fname')->paginate($request->item_per_page, ['*'], "page", $request->page);
 
             return response()->json($list, 200);
@@ -204,9 +211,11 @@ class VotersController extends Controller
         if($city == 'all'){
             $lables = Voters::select('city as label')->distinct()->get();
             $lables = Voters::select('city as label')->where('city', '=', $city)->distinct()->get();
-            $data = DB::table('voters')->rightJoin('marks','marks.voters_id','voters.id')
-                ->selectRaw('voters.city as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" THEN "Unmarked" ELSE marks.`mark` END AS mark')
-                ->where('marks.survey_id','=', $surveyid)
+            $data = DB::table('voters')->leftJoin('marks', function ($join) use ($surveyid) {
+                    $join->on('voters.id', 'marks.voters_id')
+                    ->where('marks.survey_id', '=', $surveyid);
+                })
+                ->selectRaw('voters.city as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" OR ISNULL(marks.mark) THEN "Unmarked" ELSE marks.`mark` END AS mark')
                 ->groupBy(['voters.city','marks.mark'])->get()->toArray();
                 //return response($data->pluck('Unmarked','mark'));
             foreach($lables as $label) {                                                  
@@ -253,8 +262,8 @@ class VotersController extends Controller
                 if($rd != false)  array_push($dataset['right'], reset($rd)->total);
                 else array_push($dataset['right'], 0);
                 if($ud != false) array_push($dataset['undecided'], reset($ud)->total);
-                else array_push($dataset['undecided'], 0);
-                if($nd != false) array_push($dataset['unmarked'], reset($nd)->total);
+                else array_push($dataset['undecided'], 0);                
+                if($nd != false) array_push($dataset['unmarked'], array_sum(array_column($nd, 'total')));
                 else array_push($dataset['unmarked'], 0);
 
                 array_push($dataset['left'], $tt);
@@ -262,10 +271,12 @@ class VotersController extends Controller
         }
         if($city !== 'all' && $municipality == 'all'){
             $lables = Voters::select('municipality as label')->where('city', '=', $city)->distinct()->get();
-            $data = DB::table('voters')->rightJoin('marks','marks.voters_id','voters.id')
-                ->selectRaw('voters.municipality as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" THEN "Unmarked" ELSE marks.`mark` END AS mark')
+            $data =  DB::table('voters')->leftJoin('marks', function ($join) use ($surveyid) {
+                $join->on('voters.id', 'marks.voters_id')
+                    ->where('marks.survey_id', '=', $surveyid);
+                })
+                ->selectRaw('voters.city as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" OR ISNULL(marks.mark) THEN "Unmarked" ELSE marks.`mark` END AS mark')
                 ->where('voters.city','=',$city)
-                ->where('marks.survey_id','=', $surveyid)
                 ->groupBy(['voters.municipality','marks.mark'])->get()->toArray();
                 //return response($data->pluck('Unmarked','mark'));
             foreach($lables as $label) {                                                  
@@ -313,7 +324,7 @@ class VotersController extends Controller
                 else array_push($dataset['right'], 0);
                 if($ud != false) array_push($dataset['undecided'], reset($ud)->total);
                 else array_push($dataset['undecided'], 0);
-                if($nd != false) array_push($dataset['unmarked'], reset($nd)->total);
+                if($nd != false) array_push($dataset['unmarked'], array_sum(array_column($nd, 'total')));
                 else array_push($dataset['unmarked'], 0);
 
                 array_push($dataset['left'], $tt);
@@ -325,11 +336,13 @@ class VotersController extends Controller
             ->where('municipality', '=', $municipality)
             ->distinct()->get();
 
-            $data = DB::table('voters')->rightJoin('marks','marks.voters_id','voters.id')
-                ->selectRaw('voters.barangay as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" THEN "Unmarked" ELSE marks.`mark` END AS mark')
+            $data = DB::table('voters')->leftJoin('marks', function ($join) use ($surveyid) {
+                $join->on('voters.id', 'marks.voters_id')
+                    ->where('marks.survey_id', '=', $surveyid);
+                })
+                ->selectRaw('voters.purok as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" OR ISNULL(marks.mark) THEN "Unmarked" ELSE marks.`mark` END AS mark')
                 ->where('voters.city','=',$city)
                 ->where('voters.municipality','=', $municipality)
-                ->where('marks.survey_id','=', $surveyid)
                 ->groupBy(['voters.barangay','marks.mark'])->get()->toArray();
                 //return response($data->pluck('Unmarked','mark'));
             foreach($lables as $label) {                                                  
@@ -377,13 +390,12 @@ class VotersController extends Controller
                 else array_push($dataset['right'], 0);
                 if($ud != false) array_push($dataset['undecided'], reset($ud)->total);
                 else array_push($dataset['undecided'],0);
-                if($nd != false) array_push($dataset['unmarked'], reset($nd)->total);
+                if($nd != false) array_push($dataset['unmarked'], array_sum(array_column($nd, 'total')));
                 else array_push($dataset['unmarked'], 0);
 
                 array_push($dataset['left'], $tt);
             }
         }
-        
         if($city !== 'all' && $municipality !== 'all' && $barangay !== 'all' && $purok == 'all'){
             $lables = Voters::select('purok as label')
             ->where('city', '=', $city)
@@ -391,13 +403,18 @@ class VotersController extends Controller
             ->where('barangay', '=', $barangay)
             ->distinct()->get();
 
-            $data = DB::table('voters')->rightJoin('marks','marks.voters_id','voters.id')
-            ->selectRaw('voters.purok as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" THEN "Unmarked" ELSE marks.`mark` END AS mark')
+            $data = DB::table('voters')->leftJoin('marks', function ($join) use ($surveyid) {
+                $join->on('voters.id', 'marks.voters_id')
+                ->where('marks.survey_id', '=', $surveyid);
+            })
+            ->selectRaw('voters.purok as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" OR ISNULL(marks.mark) THEN "Unmarked" ELSE marks.`mark` END AS mark')
             ->where('voters.city','=',$city)
             ->where('voters.municipality','=', $municipality)
             ->where('voters.barangay','=', $barangay)
-            ->where('marks.survey_id','=', $surveyid)
+            //->groupBy(['voters.purok','marks.mark'])->toRawSql();
             ->groupBy(['voters.purok','marks.mark'])->get()->toArray();
+
+            //return response($data);
             //return response($data->pluck('Unmarked','mark'));
             foreach($lables as $label) {                                                  
                 $ld = array_filter($data, function ($d) use ($label) {
@@ -437,6 +454,7 @@ class VotersController extends Controller
                     //echo $label;
                     return $d->label == $label->label && $d->mark == 'Unmarked';
                 });
+                //return response(reset($nd)->total);
 
                 if($ld != false) array_push($dataset['leader'], reset($ld)->total);
                 else array_push($dataset['leader'], 0);
@@ -444,13 +462,12 @@ class VotersController extends Controller
                 else array_push($dataset['right'], 0);
                 if($ud != false) array_push($dataset['undecided'], reset($ud)->total);
                 else array_push($dataset['undecided'], 0);
-                if($nd != false) array_push($dataset['unmarked'], reset($nd)->total);
+                if($nd != false) array_push($dataset['unmarked'], array_sum(array_column($nd, 'total')));
                 else array_push($dataset['unmarked'], 0);
 
                 array_push($dataset['left'], $tt);
             }
         }
-
         if($city !== 'all' && $municipality !== 'all' && $barangay !== 'all' && $purok !== 'all'){
             $lables = Voters::select('house_number as label')
             ->where('city', '=', $city)
@@ -459,13 +476,15 @@ class VotersController extends Controller
             ->where('purok', '=', $purok)
             ->distinct()->get();
 
-            $data = DB::table('voters')->rightJoin('marks','marks.voters_id','voters.id')
-            ->selectRaw('voters.house_number as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" THEN "Unmarked" ELSE marks.`mark` END AS mark')
+            $data = DB::table('voters')->leftJoin('marks', function ($join) use ($surveyid) {
+                $join->on('voters.id', 'marks.voters_id')
+                ->where('marks.survey_id', '=', $surveyid);
+            })
+            ->selectRaw('voters.purok as label, count(voters.id) as total, CASE WHEN marks.`mark` = "" OR ISNULL(marks.mark) THEN "Unmarked" ELSE marks.`mark` END AS mark')
             ->where('voters.city','=',$city)
             ->where('voters.municipality','=', $municipality)
             ->where('voters.barangay','=', $barangay)
             ->where('voters.purok','=', $purok)
-            ->where('marks.survey_id','=', $surveyid)
             ->groupBy(['voters.house_number','marks.mark'])->get()->toArray();
             //return response($data->pluck('Unmarked','mark'));
             foreach($lables as $label) {                                                  
@@ -513,7 +532,7 @@ class VotersController extends Controller
                 else array_push($dataset['right'], 0);
                 if($ud != false) array_push($dataset['undecided'], reset($ud)->total);
                 else array_push($dataset['undecided'], 0);
-                if($nd != false) array_push($dataset['unmarked'], reset($nd)->total);
+                if($nd != false) array_push($dataset['unmarked'], array_sum(array_column($nd, 'total')));
                 else array_push($dataset['unmarked'], 0);
 
                 array_push($dataset['left'], $tt);
@@ -553,6 +572,7 @@ class VotersController extends Controller
         }
         $total['total'] = $totalVoters;
 
+
         foreach($opponents as $op) {
             $a = [];
             $a['name'] = $op->alias;
@@ -590,22 +610,36 @@ class VotersController extends Controller
         $voters = DB::table('marks')
         ->selectRaw('marks.mark, count(*) as total')
         ->where('survey_id','=',$surveyid)
-        ->groupBy('marks.mark')->orderBy('marks.mark')->get()->pluck("total", "mark");
-        //return response()->json($voters);
-
+        //->groupBy('marks.mark')->orderBy('marks.mark')->toRawSql();
+        ->groupBy('marks.mark')->orderBy('marks.mark')->get()->pluck("total", "mark")->toArray();
 
         $totalVoters = 0;
+        $marks = DB::table('voters')->leftJoin('marks', function ($join) use ($surveyid) {
+            $join->on('voters.id', 'marks.voters_id')
+            ->where('marks.survey_id', '=', $surveyid);
+        })
+        ->selectRaw('count(voters.id) as total, CASE WHEN marks.`mark` = "" OR ISNULL(marks.mark) THEN "Unmarked" ELSE marks.`mark` END AS mark');
 
         switch ($user->type) {
             case 'city':
                 $city = City::where('id','=',$user['corvered_area_city'])->first()->name;
                 $totalVoters = Voters::where('city', '=', $city)->count();
+                
+                $marks->where('voters.city', '=', $city)
+                ->groupBy('marks.mark')->orderBy('marks.mark');
+
                 break;
             case 'municipality':
                 $city = City::where('id','=',$user['corvered_area_city'])->first()->name;
                 $municipality = Municipality::where('id','=',$user['corvered_area_municipality'])->first()->name;
                 $totalVoters = Voters::where('city', '=', $city)
                 ->where('municipality','=', $municipality)->count();
+
+                
+                $marks->where('voters.city', '=', $city)
+                ->where('voters.municipality','=', $municipality)
+                ->groupBy('marks.mark')->orderBy('marks.mark');
+
                 break;
             case 'barangay':
                 $city = City::where('id','=',$user['corvered_area_city'])->first()->name;
@@ -614,47 +648,69 @@ class VotersController extends Controller
                 $totalVoters = Voters::where('city', '=', $city)
                 ->where('municipality','=', $municipality)
                 ->where('barangay','=', $barangay)->count();
+
+                
+                $marks->where('voters.city', '=', $city)
+                ->where('voters.municipality','=', $municipality)
+                ->where('voters.barangay','=', $barangay)
+                ->groupBy('marks.mark')->orderBy('marks.mark');
+                
+                //return response($marks);
                 break;   
         }
 
         $total = [
-            "voters"=> $totalVoters,
+            "voters"=> 0,
             "leader"=> 0,
             "right"=> 0,
             "left"=> 0,
             "undecided"=> 0,
             "unmarked"=> 0
         ];
+        $marks = $marks->get()->toArray();
 
-        $tunm = 0;
-        if(isset($voters["Leader"])) {
-            $total["leader"] = $voters["Leader"];
-            $tunm += $voters["Leader"];
-        };
-        if(isset($voters["Me"])) {
-            $total["right"] = $voters["Me"];
-            $tunm += $voters["Me"];
-        };
-        if(isset($voters["Undecided"])){ 
-            $total["undecided"] = $voters["Undecided"];
-            $tunm += $voters["Undecided"];
-        };
-        // if(isset($voters[""])) {
-        //     $total["unmarked"] = $voters[""];
-        //     $tunm += $voters[""];
-        // };
+        $total['voters'] = array_sum(array_column($marks, 'total'));
 
-        $total["unmarked"] = $totalVoters - $tunm;
 
-        $tl = 0;
+        $leader = array_filter($marks, function ($d) {
+            //echo $label;
+            return $d->mark == 'Leader';
+        });
+        $total['leader'] = array_sum(array_column($leader, 'total'));
+
+        $me = array_filter($marks, function ($d) {
+            //echo $label;
+            return $d->mark == 'Me';
+        });
+        $total['right'] = array_sum(array_column($me, 'total'));
+
+        $unde = array_filter($marks, function ($d) {
+            //echo $label;
+            return $d->mark == 'Undecided';
+        });
+        $total['undecided'] = array_sum(array_column($unde, 'total'));
+
+        $unma = array_filter($marks, function ($d) {
+            //echo $label;
+            return $d->mark == 'Unmarked';
+        });
+        $total['unmarked'] = array_sum(array_column($unma, 'total'));
+
+        $tt = 0;
         foreach($opponents as $op) {
-            $total[$op->alias] = 0;
-            if(isset($voters[$op->alias])){
-                $tl = $tl + $voters[$op->alias];
-                $total[$op->alias] = $voters[$op->alias];
+            $da = array_filter($marks, function ($d) use ($op) {
+                return $d->mark == $op->alias;
+            });
+            if($da != false){
+                //$tot = [$op->alias => array_sum(array_column($da, 'total'))];
+                $total[$op->alias] = array_sum(array_column($da, 'total')); 
+                $tt += array_sum(array_column($da, 'total'));
             }
-            $total["left"] = $tl;
+            else {
+                $total[$op->alias] = 0; 
+            }
         }
+        $total['left'] = $tt;
 
         //$total["voters"] = $total["leader"] + $total["right"] + $total["left"] + $total["undecided"] + $total["unmarked"];
         

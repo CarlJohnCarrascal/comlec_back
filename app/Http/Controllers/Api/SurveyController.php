@@ -63,4 +63,9 @@ class SurveyController extends Controller
         //$survey->update(["isuse" => 1]);
         return response()->json(Survey::all());
     }
+
+    public function chartdata() {
+        $user =  Auth::user();
+        $userid =   $user->id;
+    }
 }
